@@ -10,7 +10,7 @@ twitter       = "https://twitter.com/anjesh"
 github        = "https://github.com/anjesh"
 
 [permalinks]
-    post = "/:year/:month/:day/:slug/"
+    post = "/:slug/"
 
 [[menu.main]]
     name = "About"

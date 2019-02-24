@@ -1,0 +1,434 @@
+---
+title: Quality Analysis of Belgium based Organisations in AidStream
+author: Anjesh
+date: '2019-02-24'
+slug: aidstream-belgium-organisations-quality
+categories: []
+tags: []
+output:
+  blogdown::html_page:
+    toc: true
+---
+
+This post contains the R code that analyzesof [IATI](https://iatistandard.org) data published by Belgium based organisations using [AidStream](https://aidstream.org). We are exploring only published activities of Belgium based organisations only. 
+
+## Setup
+
+Include the packages that we need for this analysis. The selected fields from the database tables are saved from database into RDS file and loaded here for reproducibility.
+
+```{r message=FALSE, warning=FALSE}
+library(glue)
+library(RPostgreSQL)
+library(tidyverse)
+library(viridis)
+library(lubridate)
+library(jsonlite)
+library(scales)
+library(gt)
+
+# for reproducibility, RDS files were created from the database and read here
+df.organizations <- readRDS(here::here("static","post","2019-02-22-aidstream-belgium-organisations-quality-data","belgium-organisations.rds"))
+df.activities <- readRDS(here::here("static","post","2019-02-22-aidstream-belgium-organisations-quality-data","belgium-activities.rds"))
+df.transactions <- readRDS(here::here("static","post","2019-02-22-aidstream-belgium-organisations-quality-data","belgium-transactions.rds"))
+```
+
+## Quick stats
+
+There are 91 Belgium based IATI Publishing Organisations in [IATI Registry](https://iatiregistry.org/publisher) and out of that, `r count(distinct(df.activities, organization_id))[1]$n` organisations are using AidStream to publish `r count(df.activities)[1]$n` IATI Activities.
+
+## Exploring Activity Dates and Activity Status
+
+### Data Transformation
+
+Most of the IATI specific elements are stored in JSON format in the database, so we need to simplify the fields and extract appropriate fields from the JSON for our needs. 
+
+```{r message=FALSE, warning=FALSE}
+get_start_date <- function(activity_date_json) {
+  if(is.na(activity_date_json)) {
+    return("")
+  }
+  json_out <- fromJSON(activity_date_json)
+  if(nrow(json_out[json_out$type==2,])==1) { #actual start
+    return(json_out[json_out$type==2,]$date)
+  }
+  if(nrow(json_out[json_out$type==1,])==1) { #planned start
+    return(json_out[json_out$type==1,]$date)
+  }
+  return("")
+}
+get_end_date <- function(activity_date_json) {
+  if(is.na(activity_date_json)) {
+    return("")
+  }
+  json_out <- fromJSON(activity_date_json)
+  if(nrow(json_out[json_out$type==4,])==1) { #actual end
+    return(json_out[json_out$type==4,]$date)
+  }
+  if(nrow(json_out[json_out$type==3,])==1) { #planned end
+    return(json_out[json_out$type==3,]$date)
+  }
+  return("")
+}
+
+df.activities <- df.activities %>% 
+  mutate(start_date = map_chr(activity_date, get_start_date),
+         end_date = map_chr(activity_date, get_end_date))
+
+df.activities$start_date <- parse_date_time(df.activities$start_date, "y-m-d", tz = "GMT")
+df.activities$end_date <- parse_date_time(df.activities$end_date, "y-m-d", tz = "GMT")
+df.activities$duration <- interval(df.activities$start_date, df.activities$end_date)/years(1)
+```
+
+### Plotting Scatterplot of Published Activities
+
+Here we are plotting "Start Date" and "End Date" of _Activity Date_ in the x and y axis and also using _Activity Status_ as color to segregate the activity based on the status. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+activity_status_labels = c("1"="Pipeline", "2"="Implementation","3"="Finalisation","4"="Closed")
+activity_status_colors = c("1" = "#beaed4", "2" = "#7fc97f", "3" = "#1f78b4", "4" = "#e41a1c")
+df.activities %>% 
+  filter(published_to_registry == 1) %>% 
+  ggplot(aes(x=start_date, y=end_date,color=factor(activity_status))) +
+  geom_point(alpha=0.7) +
+  scale_color_manual(labels = activity_status_labels,
+                     values = activity_status_colors) +
+  # annotate("text", x=as.POSIXct("2016-06-05"),y=as.POSIXct("2020-10-05"), label="Started in 2017 \n& ends in 2020", size=2.5) +
+  labs(color='Activity Status',
+       x="Activity Start Date",
+       y="Activity End Date")
+```
+
+We can see that some activities, which ended in 2018, are still labelled as _implementation_. We can highlight the area which should have been in _Finalisation_ or _Closed_ status as per the reported date. 
+
+### Plotting Scatterplot of Published Activities with highlight
+
+```{r message=FALSE, warning=FALSE}
+df.activities %>% 
+  filter(published_to_registry == 1) %>% 
+  ggplot(aes(x=start_date, y=end_date,color=factor(activity_status))) +
+  geom_point(alpha=0.7) +
+  scale_color_manual(labels = activity_status_labels,
+                     values = activity_status_colors) +
+  annotate("rect", xmin = as.POSIXct("2011-01-01"), xmax = as.POSIXct(Sys.Date()), ymin = as.POSIXct("2011-01-01"), ymax = as.POSIXct(Sys.Date()),
+  alpha = .1, fill="red")+
+  # annotate("text", x=as.POSIXct("2016-06-05"),y=as.POSIXct("2020-10-05"), label="Started in 2017 \n& ends in 2020", size=2.5) +
+  labs(color='Activity Status',
+       x="Activity Start Date",
+       y="Activity End Date")
+       
+```
+
+
+The activities under the red block should be either in _Finalisation_ or _Closed._ We see few activities in _Implementation_ there. 
+
+### Published Activities scatterplot based on Activity Status
+
+```{r message=FALSE, warning=FALSE}
+df.activities %>% 
+  filter(published_to_registry == 1) %>% 
+  ggplot(aes(x=start_date, y=end_date, color=factor(activity_status))) +
+  geom_point(alpha=0.7) +
+  scale_color_manual(labels = activity_status_labels,
+                     values = activity_status_colors) +
+  facet_wrap(. ~ activity_status, nrow=1, labeller = as_labeller(activity_status_labels)) +
+  annotate("rect", xmin = as.POSIXct("2011-01-01"), xmax = as.POSIXct(Sys.Date()), 
+           ymin = as.POSIXct("2011-01-01"), ymax = as.POSIXct(Sys.Date()),
+           alpha = .1, fill="red")+
+  geom_vline(xintercept = as.POSIXct(Sys.Date()), 
+             color="red", size=0.5, linetype="dotted") +
+  geom_hline(yintercept = as.POSIXct(Sys.Date()), 
+             color="red", size=0.5, linetype="dotted") +  
+  labs(x="Activity Start Date",
+       y="Activity End Date")+
+  theme(legend.position = "none") 
+
+```
+
+Here lots of projects are in _Implementation._ But there are few _Pipeline_ project which should have been started.
+
+This is the one https://aidstream.org/files/xml/rcn-bi.xml. We help you identify such anomalies and fix them before it creates confusions.
+
+#### Activity with potentially wrong Activity Status as _Pipeline_
+
+```{r message=FALSE, warning=FALSE}
+get_activity_identifier <- function(identifier_json) {
+  json_out = fromJSON(identifier_json)
+  if(is.na(identifier_json)) {
+    return("")
+  }
+  json_out$activity_identifier
+}
+df.activities %>% 
+  filter(activity_status == 1) %>% 
+  select(identifier, organization_id, start_date, end_date) %>% 
+  left_join(df.organizations, by=c("organization_id"="id")) %>% 
+  mutate(activity_identifier = map_chr(identifier, get_activity_identifier)) %>% 
+  select(Activity = activity_identifier, Organization = name, Start = start_date, End = end_date) %>% 
+  arrange(Organization) %>% 
+  gt(
+    groupname_col = "Organization"
+  ) %>% 
+  tab_header(
+    title = "Activities in Pipeline Status, with past start date"
+  ) %>% 
+  tab_options(
+    table.font.size = "small",
+    stub_group.font.size = "small",
+    column_labels.font.size = "small"
+  )
+```
+
+## Reported Recipient Country and Recipient Regions
+
+### Data Transformation
+
+We need to prepare the data in the right format. 
+
+```{r message=FALSE, warning=FALSE}
+get_country_df <- function(recipient_country_json) {
+  if(is.na(recipient_country_json)) {
+    return(data.frame())
+  }
+  json <- fromJSON(recipient_country_json)  
+  json$percentage <- as.character(ifelse(json$percentage>0,json$percentage,""))
+  json %>% 
+    select(country_code, percentage)
+}
+df.activities <- df.activities %>% 
+  mutate(recipient_country_df = map(recipient_country, get_country_df))
+df.activities.countries <- df.activities %>% 
+  select(id, activity_status, recipient_country_df) %>% 
+  unnest()
+
+get_region_df <- function(recipient_region_json) {
+  if(is.na(recipient_region_json)) {
+    return(data.frame())
+  }
+  json <- fromJSON(recipient_region_json)  
+  json$percentage <- as.character(ifelse(json$percentage>0,json$percentage,""))
+  json$region_code <- as.character(json$region_code)
+  json %>% 
+    select(region_code, percentage)
+}
+df.activities <- df.activities %>% 
+  mutate(recipient_region_df = map(recipient_region, get_region_df))
+df.activities.regions <- df.activities %>% 
+  select(id, recipient_region_df) %>% 
+  unnest()
+```
+
+### Activities by Recipient Countries
+
+Each activity can report multiple recipient countries. 
+
+```{r message=FALSE, warning=FALSE}
+df.activities.countries %>% 
+  group_by(country_code) %>% 
+  count() %>% 
+  ggplot(aes(x=reorder(country_code,-n), y=n)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 90, vjust=0.5, hjust=1,size=8)) +
+  labs(x="Country",
+       y="No of Activities")
+```
+
+### Recipient country and Activity Status
+
+Lets see how many activities in each recipient country are in different status whether they are closed or in implementation. 
+
+```{r message=FALSE, warning=FALSE}
+country_order <- df.activities.countries %>% 
+  group_by(country_code) %>% 
+  count() %>% 
+  arrange(desc(n)) %>% 
+  select(country_code)
+
+df.activities.countries$country_code <- factor(df.activities.countries$country_code, 
+                                               levels = factor(country_order$country_code))
+
+df.activities.countries %>% 
+  group_by(country_code, activity_status) %>% 
+  count() %>% 
+  ggplot(aes(x=country_code, y=n, fill=factor(activity_status))) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(labels = activity_status_labels,
+                     values = activity_status_colors) +
+  theme(axis.text.x = element_text(angle = 90, vjust=0.5, hjust=1,size=8),
+        legend.position = c(0.88,0.8)) +
+  labs(fill="Activity status",
+       x="Country",
+       y="No of Activities")
+```
+
+We see that the activities are in implementation in majority of the countries. Tehre are few countries like TD, EG, LB where the projects are in Finalisation state. 
+
+Lets take BE out of the graph. BE is skewing the graph.
+
+```{r message=FALSE, warning=FALSE}
+df.activities.countries %>% 
+  filter(country_code != "BE") %>% 
+  group_by(country_code, activity_status) %>% 
+  count() %>% 
+  ungroup() %>% 
+  ggplot(aes(x=country_code,y=n, fill=factor(activity_status))) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(labels = activity_status_labels,
+                     values = activity_status_colors) +
+  theme(axis.text.x = element_text(angle = 90, vjust=0.5, hjust=1,size=8),
+        legend.position = c(0.88,0.8)) +
+  labs(fill="Activity status",
+       x="Country",
+       y="No of Activities")
+```
+
+## Transactions
+
+### Data Transformation 
+
+Here again we are again extracting the fields of our interest from the JSON data. 
+
+```{r message=FALSE, warning=FALSE}
+df.transactions <- df.transactions %>% 
+  mutate(json = purrr::map(transaction, fromJSON))
+
+df.transactions <- df.transactions %>% 
+  mutate(type = map_chr(json, function(.x) {.x$transaction_type$transaction_type_code}),
+         date = map_chr(json, function(.x) {.x$transaction_date$date}),
+         value = map_chr(json, function(.x) {.x$value$amount}),
+         )
+df.transactions$type <- as.numeric(df.transactions$type)
+df.transactions$value <- as.numeric(df.transactions$value)
+df.transactions$date2 <- lubridate::parse_date_time(df.transactions$date, "y-m-d", tz = "GMT")
+```
+
+### Plotting all the transactions of published activities
+
+```{r}
+options(scipen = 999)
+
+transaction_type_labels = c("1"="Incoming Funds", "2"="Outgoing Commitment", "3"="Disbursement",
+                            "4"="Expenditure", "11"="Incoming Commitment")
+transaction_type_colors = c("1" = "#33a02c", "2" = "#1f78b4", "3" = "#ff7f00", 
+                           "4" = "#e31a1c", "11"="#6a3d9a")
+
+df.transactions %>% 
+  filter(!is.na(date2)) %>% 
+  filter(lubridate::year(date2) >= 2016) %>% 
+  ggplot(aes(x=date2, y=value, color=factor(type))) +
+  geom_point(alpha=0.5) +
+  scale_y_continuous(label=comma) +
+  scale_color_manual(labels = transaction_type_labels,
+                     values = transaction_type_colors) +
+  labs(color='Transaction Type',
+       x="Transaction Date",
+       y="Transaction Value")
+  
+```
+
+Different transaction types are given colors and we can see certain patterns like incoming Committments can be see in the beginning of each year. However the graph would be more meaningful if we could add today's date so that we know which transactions are in future date. 
+
+Also we see that one transaction of 150+ million value is skewing the chart. 
+
+### Identification of the outlier Transaction
+
+```{r}
+df.transactions %>% 
+  filter(value>150000000) %>% 
+  left_join(df.activities, by=c("activity_id"="id")) %>% 
+  select(activity_id, value, identifier, date, organization_id) %>% 
+  left_join(df.organizations, by=c("organization_id"="id")) %>% 
+  mutate(activity_identifier = map_chr(identifier, get_activity_identifier)) %>% 
+  select(name, activity_identifier, date, value) %>% 
+  gt() %>% 
+  cols_label(
+    name = "Organization",
+    activity_identifier = "Activity",
+    date = "Transaction Date",
+    value = "Transaction Value"
+  ) %>% 
+  fmt_number(
+    columns = c("value"),
+    use_seps = TRUE
+  ) %>% 
+  tab_options(
+    table.font.size = "small",
+    stub_group.font.size = "small",
+    column_labels.font.size = "small"
+  )
+```
+
+If you look at the XML, https://aidstream.org/files/xml/protos-activities.xml, that high value is in different currency. We haven't adjusted for currency here, but that's something we will do in premium support so that such outliers are adjusted. It could be the situation where you forget to add currency, giving the wrong picture. 
+
+### Plotting all the transactions of published activities except outlier
+
+```{r message=FALSE, warning=FALSE}
+df.transactions %>% 
+  filter(!is.na(date2)) %>% 
+  filter(lubridate::year(date2) >= 2016) %>% 
+  filter(value<50000000) %>% 
+  ggplot(aes(x=date2, y=value, color=factor(type))) +
+  geom_point(alpha=0.5) +
+  geom_vline(xintercept = as.POSIXct(Sys.Date()), 
+             color="red", size=0.5, linetype="dotted") +
+  scale_y_continuous(label=comma) +
+  scale_color_manual(labels = transaction_type_labels,
+                     values = transaction_type_colors) +
+  labs(color='Transaction Type',
+       x="Transaction Date",
+       y="Transaction Value")
+```
+
+### Facet view of published Transactions
+
+Lets further segregate the transactions based on _Transaction Type_ so that overlap among different types are minimised. 
+
+```{r message=FALSE, warning=FALSE}
+df.transactions %>% 
+  filter(!is.na(date2)) %>% 
+  filter(lubridate::year(date2) >= 2016) %>% 
+  filter(value<50000000) %>% 
+  ggplot(aes(x=date2, y=value/1000000, color=factor(type))) +
+  geom_point(alpha=0.5) +
+  geom_vline(xintercept = as.POSIXct(Sys.Date()), 
+             color="red", size=0.5, linetype="dotted") +
+  scale_y_continuous(label=comma) +
+  scale_color_manual(labels = transaction_type_labels,
+                     values = transaction_type_colors) +
+  labs(color='Transaction Type',
+       x="Transaction Date",
+       y="Transaction Value (in million)") +
+  facet_wrap(. ~ type, ncol = 1, labeller = as_labeller(transaction_type_labels)) +
+  theme(legend.position = "none")
+```
+
+### Identification of the wrongly reported _Incoming Funds_
+
+```{r}
+df.transactions %>% 
+  filter(type==1 & date > as.Date(Sys.Date())) %>% 
+  left_join(df.activities, by = c("activity_id"="id")) %>% 
+  left_join(df.organizations, by = c("organization_id"="id")) %>% 
+  mutate(activity_identifier = map_chr(identifier, get_activity_identifier)) %>% 
+  select(Organization=name, activity_identifier, value, date) %>% 
+  group_by(Organization) %>% 
+  arrange(Organization, date) %>% 
+  gt() %>% 
+  tab_header("Activities with Future Incoming Funds") %>% 
+  cols_label(
+    activity_identifier = md("**Activity**"),
+    value = md("**Transaction Value**"),
+    date = md("**Transaction Date**")
+  ) %>% 
+  fmt_number(
+    columns = c("value"),
+    use_seps = TRUE
+  ) %>% 
+  tab_options(
+    table.font.size = "small",
+    stub_group.font.size = "small",
+    column_labels.font.size = "small"
+  )
+  
+  
+```
+
