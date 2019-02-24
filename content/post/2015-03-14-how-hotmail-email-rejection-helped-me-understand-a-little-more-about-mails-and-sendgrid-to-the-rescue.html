@@ -1,0 +1,109 @@
+---
+title: How hotmail email rejection helped me understand a little more about mails
+  and sendgrid to the rescue
+author: Anjesh
+date: '2015-03-14'
+slug: hotmail-mail-rejection-sendgrid-smtp-working
+categories: []
+tags: []
+---
+
+
+
+<p>TL;DR</p>
+<p>You just have to avoid outgoing SMTP to go through exim to use sendgrid or similar SMTP services to send your emails. There’s a tweak settings page in WHM from where you turn off this option.</p>
+<p>Learn how to use telnet and monitor exim logs to debug your email related problems.</p>
+<hr>
+<p>People complained that they are not receiving emails in their hotmail account from their site, while emails are coming to their gmail and yahoo account. Upon quick inspection i see that exim logs those rejection.</p>
+<p>I created a simple script <code>testmail.php</code> to test the hotmail rejection.</p>
+<pre class="php"><code>if($argv[1] == &quot;testhotmail&quot;) {
+  $to = &quot;a@hotmail.com&quot;;
+} else {
+  $to = &quot;a@yipl.com.np&quot;;
+}
+$subject = &quot;This is subject&quot;;
+$message = &quot;This is simple text message.&quot;;
+$header = &quot;From:info@abc.com \r\n&quot;;
+$retval = mail ($to,$subject,$message,$header);
+if( $retval == true ) {
+  echo &quot;Message sent successfully...&quot;;
+}
+else {
+  echo &quot;Message could not be sent...&quot;;
+}</code></pre>
+<p>Running <code>php testmail.php</code> to send email to other domain than hotmail, results in the following message in <code>\var\log\exim_mainlog</code> file and i got the message in the spam. Here spam is not important, delivery is.</p>
+<pre class="bash"><code>2015-03-14 00:08:40 1YWdNQ-0001EW-Ej &lt;= a@fserv.yipl.com.np U=a P=local S=374 T=&quot;This is subject&quot; for a@yipl.com.np
+2015-03-14 00:08:40 cwd=/var/spool/exim 3 args: /usr/sbin/exim -Mc 1YWdNQ-0001EW-Ej
+2015-03-14 00:08:41 1YWdNQ-0001EW-Ej =&gt; a@yipl.com.np R=lookuphost T=remote_smtp H=aspmx.l.google.com [74.125.196.26] X=UNKNOWN:ECDHE-RSA-AES128-GCM-SHA256:128 C=&quot;250 2.0.0 OK 1426306121 f188si1986868ykd.88 - gsmtp&quot;
+2015-03-14 00:08:41 1YWdNQ-0001EW-Ej Completed</code></pre>
+<p>Running <code>php testmail.php testhotmail</code> results in the following message in the <code>\var\log\exim_mainlog</code> file. Note the following rejection message.</p>
+<pre class="txt"><code>SMTP error from remote mail server after MAIL FROM:&lt;a@fserv.yipl.com.np&gt; SIZE=1412: host mx3.hotmail.com [65.55.92.168]: 550 SC-001 (SNT004-MC3F54) Unfortunately, messages from 207.58.181.243 weren&#39;t sent. Please contact your Internet service provider since part of their network is on our block list. You can also refer your provider to http://mail.live.com/mail/troubleshooting.aspx#errors.</code></pre>
+<pre class="txt"><code>2015-03-14 00:09:15 1YWdNz-0001F9-Bu &lt;= a@fserv.yipl.com.np U=a P=local S=378 T=&quot;This is subject&quot; for a50@hotmail.com
+2015-03-14 00:09:15 cwd=/var/spool/exim 3 args: /usr/sbin/exim -Mc 1YWdNz-0001F9-Bu
+2015-03-14 00:09:17 1YWdNz-0001F9-Bu ** a50@hotmail.com R=lookuphost T=remote_smtp: SMTP error from remote mail server after MAIL FROM:&lt;a@fserv.yipl.com.np&gt; SIZE=1412: host mx2.hotmail.com [65.54.188.126]: 550 SC-001 (BAY004-MC4F56) Unfortunately, messages from 207.58.181.243 weren&#39;t sent. Please contact your Internet service provider since part of their network is on our block list. You can also refer your provider to http://mail.live.com/mail/troubleshooting.aspx#errors.
+2015-03-14 00:09:17 cwd=/var/spool/exim 7 args: /usr/sbin/exim -t -oem -oi -f &lt;&gt; -E1YWdNz-0001F9-Bu
+2015-03-14 00:09:18 1YWdO1-0001FH-Tq &lt;= &lt;&gt; R=1YWdNz-0001F9-Bu U=mailnull P=local S=1586 T=&quot;Mail delivery failed: returning message to sender&quot; for a@fserv.yipl.com.np
+2015-03-14 00:09:18 cwd=/var/spool/exim 3 args: /usr/sbin/exim -Mc 1YWdO1-0001FH-Tq
+2015-03-14 00:09:18 1YWdNz-0001F9-Bu Completed</code></pre>
+<p>After spending an hour in the server and searching in the forums, i decided to use <a href="http://sendgrid.com">sendgrid</a> to send emails through external SMTP. I tested their <a href="https://github.com/sendgrid/sendgrid-php">sendgrid-api</a> and I was able to receive the emails in my inbox. Direct use of SMTP server wasnot working.</p>
+<p>I telnet to the sendgrid smtp and got incorrect authentication data. Please see the <a href="https://www.ndchost.com/wiki/mail/test-smtp-auth-telnet">steps here</a> to telnet to SMTP server.</p>
+<pre class="bash"><code>user@example.com [~] telnet smtp.sendgrid.net 25
+Trying 208.43.76.146...
+Connected to smtp.sendgrid.net.
+Escape character is &#39;^]&#39;.
+220-fserv.yipl.com.np ESMTP Exim 4.82 #2 Fri, 13 Mar 2015 11:26:25 -0400 
+220-We do not authorize the use of this system to transport unsolicited, 
+220 and/or bulk e-mail.`
+
+ehlo
+
+250-fserv.yipl.com.np Hello fserv.yipl.com.np [207.58.181.243]
+250-SIZE 52428800
+250-8BITMIME
+250-PIPELINING
+250-AUTH PLAIN LOGIN
+250-STARTTLS
+250 HELP
+
+auth login
+
+334 VXNlcm5hbWU6
+
+cmFwbmxxxxx=
+
+334 UGFzc3dvcmQ6
+
+cmFxxxxxxxxxxxxx=
+
+535 Incorrect authentication data</code></pre>
+<p><code>/var/log/exim_mainlog</code> shows the following message</p>
+<pre class="console"><code>2015-03-14 00:21:36 SMTP connection from [207.58.181.243]:54472 (TCP/IP connection count = 1)
+2015-03-14 00:21:56 SMTP connection from [207.58.181.243]:45856 (TCP/IP connection count = 2)
+2015-03-14 00:22:04 dovecot_login authenticator failed for fserv.yipl.com.np () [207.58.181.243]:54472: 535 Incorrect authentication data (set_id=rapnepal)</code></pre>
+<p>Different forums gave different solutions. One was to implement sendgrid directly in exim. I followed the instructions, made changes in exim configuration and yet i was still getting <code>dovecot_login authenticator failed</code>. I couldn’t find the way to get <code>sendgrid_login authenticator</code> working. I would still like to see how to get the sendgrid_login do the authentication.</p>
+<p>Finally i landed on this <a href="http://stackoverflow.com/questions/14297264/password-not-accepted-from-server-535-incorrect-authentication-data-when-send">stackoverflow page</a> and i turned off the option to restrict outgoing SMTP to exim.</p>
+<div class="figure">
+<img src="/post/2015-02-14-how-hotmail-email-rejection-helped-me-understand-a-little-more-about-mails-and-sendgrid-to-the-rescue_files/whm-smtp.png" alt="WHM SMTP tweak" />
+<p class="caption">WHM SMTP tweak</p>
+</div>
+<p>Finally the authentication worked and the emails are sent via sendgrid.</p>
+<pre class="bash"><code>telnet smtp.sendgrid.net 
+Trying 208.43.76.147...
+Connected to smtp.sendgrid.net.
+Escape character is &#39;^]&#39;.
+220 ismtpd-031 ESMTP service ready
+ehlo
+250-207.58.181.243
+250-SIZE 20480000
+250-STARTTLS
+250-AUTH PLAIN LOGIN
+250-8BITMIME
+250-PIPELINING
+250 AUTH=PLAIN LOGIN
+auth login
+334 VXNlcm5hbWU6
+cmFwbmxxxxx=
+334 UGFzc3dvcmQ6
+cmFwbmxxxxxxxxx=
+235 Authentication successful.</code></pre>
+<p>I spent close to 4 hours to get the email pass through sendgrid SMTP. It was just an option you need to check off. Sigh.</p>
