@@ -12,10 +12,10 @@ It is not that we have a short time to live, but that we waste a lot of it. Life
 
 This blog is setup using 
 
-* blogdown using Hugo
-* Theme Hugo Tanka
-* Hosted in github
-* Coded in RStudio
+* [Blogdown](https://bookdown.org/yihui/blogdown/) and [Hugo](https://gohugo.io/)
+* Uses [Theme Hugo Lithium](https://themes.gohugo.io/hugo-lithium-theme/)
+* Hosted in [netlify](https://netlify.com)
+* Coded in [RStudio](https://www.rstudio.com/)
 
 Have questions or suggestions? Please [open an issue on GitHub](https://github.com/anjesh/anjesh.github.io/issues/new) or [ask me on Twitter](https://twitter.com/anjesh).
 
