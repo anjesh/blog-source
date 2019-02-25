@@ -10,7 +10,7 @@ output:
     toc: true
 ---
 
-This post contains the R code that analyzesof [IATI](https://iatistandard.org) data published by Belgium based organisations using [AidStream](https://aidstream.org). We are exploring only published activities of Belgium based organisations only. 
+This post contains the R code that analyzes [IATI](https://iatistandard.org) data published by Belgium based organisations using [AidStream](https://aidstream.org). We are exploring only published activities of Belgium based organisations only. 
 
 ## Setup
 
