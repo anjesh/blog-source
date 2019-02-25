@@ -1,2 +1,2 @@
-http://anjesh.rbind.io/*        https://anjesh.rbind.io/:splat    301!
-https://anjesh.netlify.com/*    https://anjesh.rbind.io/:splat    301!
+http://anjesh.rbind.io/* https://anjesh.rbind.io/:splat 301!
+https://anjesh.netlify.com/* https://anjesh.rbind.io/:splat 301!
