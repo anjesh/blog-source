@@ -323,3 +323,21 @@ code {
 #TOC {
  font-size: 14px;
 }
+
+.striped-border {
+    border: 0.5px dashed #ddd;
+    width: 50%;
+    margin: auto;
+    margin-top: 5%;
+    margin-bottom: 5%;
+}
+
+.feedback-content {
+  max-width: 700px;
+  margin: 10px auto 10px;
+  padding: 0 15px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #333;
+}

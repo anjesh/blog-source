@@ -1,6 +1,7 @@
 ---
 title: "About"
 date: "2019-01-30T21:48:51-07:00"
+layout: page
 ---
 
 
@@ -17,7 +18,7 @@ This blog is setup using
 * Hosted in [netlify](https://netlify.com)
 * Coded in [RStudio](https://www.rstudio.com/)
 
-Have questions or suggestions? Please [open an issue on GitHub](https://github.com/anjesh/anjesh.github.io/issues/new) or [ask me on Twitter](https://twitter.com/anjesh).
+Have questions or suggestions? Please [open an issue on GitHub](https://github.com/anjesh/blog-source/issues/new) or [ask me on Twitter](https://twitter.com/anjesh).
 
 Read some of [my memorable deeds](/deeds/)
 

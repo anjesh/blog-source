@@ -1,6 +1,7 @@
 ---
 title: My Memorable Deeds
 author: Anjesh
+layout: page
 ---
 
 <p class="message">
