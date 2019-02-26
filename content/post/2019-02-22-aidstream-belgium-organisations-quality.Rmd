@@ -81,7 +81,7 @@ df.activities$duration <- interval(df.activities$start_date, df.activities$end_d
 
 ### Plotting Scatterplot of Published Activities
 
-Here we are plotting "Start Date" and "End Date" of _Activity Date_ in the x and y axis and also using _Activity Status_ as color to segregate the activity based on the status. 
+Here we are plotting "Start Date" and "End Date" of _Activity Date_ in the x and y axis and also using _Activity Status_ as color to segregate the activity. 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 activity_status_labels = c("1"="Pipeline", "2"="Implementation","3"="Finalisation","4"="Closed")
@@ -98,7 +98,7 @@ df.activities %>%
        y="Activity End Date")
 ```
 
-We can see that some activities, which ended in 2018, are still labelled as _implementation_. We can highlight the area which should have been in _Finalisation_ or _Closed_ status as per the reported date. 
+We can see that some activities, which ended in 2018, are still labelled as _implementation_. Lets highlight the area which should have been in _Finalisation_ or _Closed_ status as per the reported date. 
 
 ### Plotting Scatterplot of Published Activities with highlight
 
@@ -119,7 +119,7 @@ df.activities %>%
 ```
 
 
-The activities under the red block should be either in _Finalisation_ or _Closed._ We see few activities in _Implementation_ there. 
+The activities under the red block should be either in _Finalisation_ or _Closed._ But we see few activities in _Implementation_ there. 
 
 ### Published Activities scatterplot based on Activity Status
 
@@ -144,9 +144,7 @@ df.activities %>%
 
 ```
 
-Here lots of projects are in _Implementation._ But there are few _Pipeline_ project which should have been started.
-
-This is the one https://aidstream.org/files/xml/rcn-bi.xml. We help you identify such anomalies and fix them before it creates confusions.
+Here we see there are few _Pipeline_ project which should have been started.
 
 #### Activity with potentially wrong Activity Status as _Pipeline_
 
@@ -219,7 +217,7 @@ df.activities.regions <- df.activities %>%
 
 ### Activities by Recipient Countries
 
-Each activity can report multiple recipient countries. 
+Here's the analysis on how activities are reporting Recipient countries.
 
 ```{r message=FALSE, warning=FALSE}
 df.activities.countries %>% 
@@ -234,7 +232,7 @@ df.activities.countries %>%
 
 ### Recipient country and Activity Status
 
-Lets see how many activities in each recipient country are in different status whether they are closed or in implementation. 
+Lets see how many activities in each recipient country are in different Activity Status.
 
 ```{r message=FALSE, warning=FALSE}
 country_order <- df.activities.countries %>% 
@@ -260,9 +258,9 @@ df.activities.countries %>%
        y="No of Activities")
 ```
 
-We see that the activities are in implementation in majority of the countries. Tehre are few countries like TD, EG, LB where the projects are in Finalisation state. 
+We see that the activities are in implementation in majority of the countries. There are few countries like TD, EG, LB where the projects are in Finalisation state. 
 
-Lets take BE out of the graph. BE is skewing the graph.
+Lets take BE out of the graph. BE (with 200+activities) is skewing the graph.
 
 ```{r message=FALSE, warning=FALSE}
 df.activities.countries %>% 
@@ -285,7 +283,7 @@ df.activities.countries %>%
 
 ### Data Transformation 
 
-Here again we are again extracting the fields of our interest from the JSON data. 
+Here again we are again extracting the fields of our interest from the transaction JSON data. 
 
 ```{r message=FALSE, warning=FALSE}
 df.transactions <- df.transactions %>% 
@@ -325,7 +323,7 @@ df.transactions %>%
   
 ```
 
-Different transaction types are given colors and we can see certain patterns like incoming Committments can be see in the beginning of each year. However the graph would be more meaningful if we could add today's date so that we know which transactions are in future date. 
+Transaction are given colors for different transaction-type and we can see certain patterns like _Incoming Committments_ can be see in the beginning of each year. However the graph would be more meaningful if we could add today's date so that we know which transactions are in future date. 
 
 Also we see that one transaction of 150+ million value is skewing the chart. 
 
@@ -357,7 +355,7 @@ df.transactions %>%
   )
 ```
 
-If you look at the XML, https://aidstream.org/files/xml/protos-activities.xml, that high value is in different currency. We haven't adjusted for currency here, but that's something we will do in premium support so that such outliers are adjusted. It could be the situation where you forget to add currency, giving the wrong picture. 
+If you look at the XML, https://aidstream.org/files/xml/protos-activities.xml, that high value is in different currency. We haven't adjusted for currency here.  
 
 ### Plotting all the transactions of published activities except outlier
 
@@ -378,7 +376,7 @@ df.transactions %>%
        y="Transaction Value")
 ```
 
-### Facet view of published Transactions
+### Facet view of Published Transactions
 
 Lets further segregate the transactions based on _Transaction Type_ so that overlap among different types are minimised. 
 

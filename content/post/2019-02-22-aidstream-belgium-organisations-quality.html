@@ -31,7 +31,7 @@ output:
 <li><a href="#plotting-all-the-transactions-of-published-activities">Plotting all the transactions of published activities</a></li>
 <li><a href="#identification-of-the-outlier-transaction">Identification of the outlier Transaction</a></li>
 <li><a href="#plotting-all-the-transactions-of-published-activities-except-outlier">Plotting all the transactions of published activities except outlier</a></li>
-<li><a href="#facet-view-of-published-transactions">Facet view of published Transactions</a></li>
+<li><a href="#facet-view-of-published-transactions">Facet view of Published Transactions</a></li>
 <li><a href="#identification-of-the-wrongly-reported-incoming-funds">Identification of the wrongly reported <em>Incoming Funds</em></a></li>
 </ul></li>
 </ul>
@@ -101,9 +101,9 @@ df.activities$duration &lt;- interval(df.activities$start_date, df.activities$en
 </div>
 <div id="plotting-scatterplot-of-published-activities" class="section level3">
 <h3>Plotting Scatterplot of Published Activities</h3>
-<p>Here we are plotting “Start Date” and “End Date” of <em>Activity Date</em> in the x and y axis and also using <em>Activity Status</em> as color to segregate the activity based on the status.</p>
+<p>Here we are plotting “Start Date” and “End Date” of <em>Activity Date</em> in the x and y axis and also using <em>Activity Status</em> as color to segregate the activity.</p>
 <p><img src="/post/2019-02-22-aidstream-belgium-organisations-quality_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
-<p>We can see that some activities, which ended in 2018, are still labelled as <em>implementation</em>. We can highlight the area which should have been in <em>Finalisation</em> or <em>Closed</em> status as per the reported date.</p>
+<p>We can see that some activities, which ended in 2018, are still labelled as <em>implementation</em>. Lets highlight the area which should have been in <em>Finalisation</em> or <em>Closed</em> status as per the reported date.</p>
 </div>
 <div id="plotting-scatterplot-of-published-activities-with-highlight" class="section level3">
 <h3>Plotting Scatterplot of Published Activities with highlight</h3>
@@ -120,7 +120,7 @@ df.activities$duration &lt;- interval(df.activities$start_date, df.activities$en
        x=&quot;Activity Start Date&quot;,
        y=&quot;Activity End Date&quot;)</code></pre>
 <p><img src="/post/2019-02-22-aidstream-belgium-organisations-quality_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
-<p>The activities under the red block should be either in <em>Finalisation</em> or <em>Closed.</em> We see few activities in <em>Implementation</em> there.</p>
+<p>The activities under the red block should be either in <em>Finalisation</em> or <em>Closed.</em> But we see few activities in <em>Implementation</em> there.</p>
 </div>
 <div id="published-activities-scatterplot-based-on-activity-status" class="section level3">
 <h3>Published Activities scatterplot based on Activity Status</h3>
@@ -142,8 +142,7 @@ df.activities$duration &lt;- interval(df.activities$start_date, df.activities$en
        y=&quot;Activity End Date&quot;)+
   theme(legend.position = &quot;none&quot;) </code></pre>
 <p><img src="/post/2019-02-22-aidstream-belgium-organisations-quality_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
-<p>Here lots of projects are in <em>Implementation.</em> But there are few <em>Pipeline</em> project which should have been started.</p>
-<p>This is the one <a href="https://aidstream.org/files/xml/rcn-bi.xml" class="uri">https://aidstream.org/files/xml/rcn-bi.xml</a>. We help you identify such anomalies and fix them before it creates confusions.</p>
+<p>Here we see there are few <em>Pipeline</em> project which should have been started.</p>
 <div id="activity-with-potentially-wrong-activity-status-as-pipeline" class="section level4">
 <h4>Activity with potentially wrong Activity Status as <em>Pipeline</em></h4>
 <pre class="r"><code>get_activity_identifier &lt;- function(identifier_json) {
@@ -175,7 +174,7 @@ df.activities %&gt;%
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#zwvoaefpkq .gt_table {
+#dnniqvjaza .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -194,13 +193,13 @@ df.activities %&gt;%
   /* table.border.top.color */
 }
 
-#zwvoaefpkq .gt_heading {
+#dnniqvjaza .gt_heading {
   background-color: #FFFFFF;
   /* heading.background.color */
   border-bottom-color: #FFFFFF;
 }
 
-#zwvoaefpkq .gt_title {
+#dnniqvjaza .gt_title {
   color: #000000;
   font-size: 125%;
   /* heading.title.font.size */
@@ -211,7 +210,7 @@ df.activities %&gt;%
   border-bottom-width: 0;
 }
 
-#zwvoaefpkq .gt_subtitle {
+#dnniqvjaza .gt_subtitle {
   color: #000000;
   font-size: 85%;
   /* heading.subtitle.font.size */
@@ -222,7 +221,7 @@ df.activities %&gt;%
   border-top-width: 0;
 }
 
-#zwvoaefpkq .gt_bottom_border {
+#dnniqvjaza .gt_bottom_border {
   border-bottom-style: solid;
   /* heading.border.bottom.style */
   border-bottom-width: 2px;
@@ -231,7 +230,7 @@ df.activities %&gt;%
   /* heading.border.bottom.color */
 }
 
-#zwvoaefpkq .gt_column_spanner {
+#dnniqvjaza .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #A8A8A8;
@@ -239,7 +238,7 @@ df.activities %&gt;%
   padding-bottom: 4px;
 }
 
-#zwvoaefpkq .gt_col_heading {
+#dnniqvjaza .gt_col_heading {
   color: #000000;
   background-color: #FFFFFF;
   /* column_labels.background.color */
@@ -252,11 +251,11 @@ df.activities %&gt;%
   margin: 10px;
 }
 
-#zwvoaefpkq .gt_sep_right {
+#dnniqvjaza .gt_sep_right {
   border-right: 5px solid #FFFFFF;
 }
 
-#zwvoaefpkq .gt_group_heading {
+#dnniqvjaza .gt_group_heading {
   padding: 8px;
   color: #000000;
   background-color: #FFFFFF;
@@ -280,7 +279,7 @@ df.activities %&gt;%
   vertical-align: middle;
 }
 
-#zwvoaefpkq .gt_empty_group_heading {
+#dnniqvjaza .gt_empty_group_heading {
   padding: 0.5px;
   color: #000000;
   background-color: #FFFFFF;
@@ -304,29 +303,29 @@ df.activities %&gt;%
   vertical-align: middle;
 }
 
-#zwvoaefpkq .gt_striped {
+#dnniqvjaza .gt_striped {
   background-color: #f2f2f2;
 }
 
-#zwvoaefpkq .gt_row {
+#dnniqvjaza .gt_row {
   padding: 10px;
   /* row.padding */
   margin: 10px;
   vertical-align: middle;
 }
 
-#zwvoaefpkq .gt_stub {
+#dnniqvjaza .gt_stub {
   border-right-style: solid;
   border-right-width: 2px;
   border-right-color: #A8A8A8;
   padding-left: 12px;
 }
 
-#zwvoaefpkq .gt_stub.gt_row {
+#dnniqvjaza .gt_stub.gt_row {
   background-color: #FFFFFF;
 }
 
-#zwvoaefpkq .gt_summary_row {
+#dnniqvjaza .gt_summary_row {
   background-color: #FFFFFF;
   /* summary_row.background.color */
   padding: 6px;
@@ -335,13 +334,13 @@ df.activities %&gt;%
   /* summary_row.text_transform */
 }
 
-#zwvoaefpkq .gt_first_summary_row {
+#dnniqvjaza .gt_first_summary_row {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #A8A8A8;
 }
 
-#zwvoaefpkq .gt_table_body {
+#dnniqvjaza .gt_table_body {
   border-top-style: solid;
   /* field.border.top.style */
   border-top-width: 2px;
@@ -356,55 +355,55 @@ df.activities %&gt;%
   /* field.border.bottom.color */
 }
 
-#zwvoaefpkq .gt_footnote {
+#dnniqvjaza .gt_footnote {
   font-size: 90%;
   /* footnote.font.size */
   padding: 4px;
   /* footnote.padding */
 }
 
-#zwvoaefpkq .gt_sourcenote {
+#dnniqvjaza .gt_sourcenote {
   font-size: 90%;
   /* sourcenote.font.size */
   padding: 4px;
   /* sourcenote.padding */
 }
 
-#zwvoaefpkq .gt_center {
+#dnniqvjaza .gt_center {
   text-align: center;
 }
 
-#zwvoaefpkq .gt_left {
+#dnniqvjaza .gt_left {
   text-align: left;
 }
 
-#zwvoaefpkq .gt_right {
+#dnniqvjaza .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#zwvoaefpkq .gt_font_normal {
+#dnniqvjaza .gt_font_normal {
   font-weight: normal;
 }
 
-#zwvoaefpkq .gt_font_bold {
+#dnniqvjaza .gt_font_bold {
   font-weight: bold;
 }
 
-#zwvoaefpkq .gt_font_italic {
+#dnniqvjaza .gt_font_italic {
   font-style: italic;
 }
 
-#zwvoaefpkq .gt_super {
+#dnniqvjaza .gt_super {
   font-size: 65%;
 }
 
-#zwvoaefpkq .gt_footnote_glyph {
+#dnniqvjaza .gt_footnote_glyph {
   font-style: italic;
   font-size: 65%;
 }
 </style>
-<div id="zwvoaefpkq" style="overflow-x:auto;"><!--gt table start-->
+<div id="dnniqvjaza" style="overflow-x:auto;"><!--gt table start-->
 <table class='gt_table'>
 <thead>
 <tr>
@@ -504,7 +503,7 @@ df.activities.regions &lt;- df.activities %&gt;%
 </div>
 <div id="activities-by-recipient-countries" class="section level3">
 <h3>Activities by Recipient Countries</h3>
-<p>Each activity can report multiple recipient countries.</p>
+<p>Here’s the analysis on how activities are reporting Recipient countries.</p>
 <pre class="r"><code>df.activities.countries %&gt;% 
   group_by(country_code) %&gt;% 
   count() %&gt;% 
@@ -517,7 +516,7 @@ df.activities.regions &lt;- df.activities %&gt;%
 </div>
 <div id="recipient-country-and-activity-status" class="section level3">
 <h3>Recipient country and Activity Status</h3>
-<p>Lets see how many activities in each recipient country are in different status whether they are closed or in implementation.</p>
+<p>Lets see how many activities in each recipient country are in different Activity Status.</p>
 <pre class="r"><code>country_order &lt;- df.activities.countries %&gt;% 
   group_by(country_code) %&gt;% 
   count() %&gt;% 
@@ -540,8 +539,8 @@ df.activities.countries %&gt;%
        x=&quot;Country&quot;,
        y=&quot;No of Activities&quot;)</code></pre>
 <p><img src="/post/2019-02-22-aidstream-belgium-organisations-quality_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
-<p>We see that the activities are in implementation in majority of the countries. Tehre are few countries like TD, EG, LB where the projects are in Finalisation state.</p>
-<p>Lets take BE out of the graph. BE is skewing the graph.</p>
+<p>We see that the activities are in implementation in majority of the countries. There are few countries like TD, EG, LB where the projects are in Finalisation state.</p>
+<p>Lets take BE out of the graph. BE (with 200+activities) is skewing the graph.</p>
 <pre class="r"><code>df.activities.countries %&gt;% 
   filter(country_code != &quot;BE&quot;) %&gt;% 
   group_by(country_code, activity_status) %&gt;% 
@@ -563,7 +562,7 @@ df.activities.countries %&gt;%
 <h2>Transactions</h2>
 <div id="data-transformation-2" class="section level3">
 <h3>Data Transformation</h3>
-<p>Here again we are again extracting the fields of our interest from the JSON data.</p>
+<p>Here again we are again extracting the fields of our interest from the transaction JSON data.</p>
 <pre class="r"><code>df.transactions &lt;- df.transactions %&gt;% 
   mutate(json = purrr::map(transaction, fromJSON))
 
@@ -597,7 +596,7 @@ df.transactions %&gt;%
        x=&quot;Transaction Date&quot;,
        y=&quot;Transaction Value&quot;)</code></pre>
 <p><img src="/post/2019-02-22-aidstream-belgium-organisations-quality_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
-<p>Different transaction types are given colors and we can see certain patterns like incoming Committments can be see in the beginning of each year. However the graph would be more meaningful if we could add today’s date so that we know which transactions are in future date.</p>
+<p>Transaction are given colors for different transaction-type and we can see certain patterns like <em>Incoming Committments</em> can be see in the beginning of each year. However the graph would be more meaningful if we could add today’s date so that we know which transactions are in future date.</p>
 <p>Also we see that one transaction of 150+ million value is skewing the chart.</p>
 </div>
 <div id="identification-of-the-outlier-transaction" class="section level3">
@@ -629,7 +628,7 @@ df.transactions %&gt;%
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#iginuyipnz .gt_table {
+#pkzcjbjggf .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -648,13 +647,13 @@ df.transactions %&gt;%
   /* table.border.top.color */
 }
 
-#iginuyipnz .gt_heading {
+#pkzcjbjggf .gt_heading {
   background-color: #FFFFFF;
   /* heading.background.color */
   border-bottom-color: #FFFFFF;
 }
 
-#iginuyipnz .gt_title {
+#pkzcjbjggf .gt_title {
   color: #000000;
   font-size: 125%;
   /* heading.title.font.size */
@@ -665,7 +664,7 @@ df.transactions %&gt;%
   border-bottom-width: 0;
 }
 
-#iginuyipnz .gt_subtitle {
+#pkzcjbjggf .gt_subtitle {
   color: #000000;
   font-size: 85%;
   /* heading.subtitle.font.size */
@@ -676,7 +675,7 @@ df.transactions %&gt;%
   border-top-width: 0;
 }
 
-#iginuyipnz .gt_bottom_border {
+#pkzcjbjggf .gt_bottom_border {
   border-bottom-style: solid;
   /* heading.border.bottom.style */
   border-bottom-width: 2px;
@@ -685,7 +684,7 @@ df.transactions %&gt;%
   /* heading.border.bottom.color */
 }
 
-#iginuyipnz .gt_column_spanner {
+#pkzcjbjggf .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #A8A8A8;
@@ -693,7 +692,7 @@ df.transactions %&gt;%
   padding-bottom: 4px;
 }
 
-#iginuyipnz .gt_col_heading {
+#pkzcjbjggf .gt_col_heading {
   color: #000000;
   background-color: #FFFFFF;
   /* column_labels.background.color */
@@ -706,11 +705,11 @@ df.transactions %&gt;%
   margin: 10px;
 }
 
-#iginuyipnz .gt_sep_right {
+#pkzcjbjggf .gt_sep_right {
   border-right: 5px solid #FFFFFF;
 }
 
-#iginuyipnz .gt_group_heading {
+#pkzcjbjggf .gt_group_heading {
   padding: 8px;
   color: #000000;
   background-color: #FFFFFF;
@@ -734,7 +733,7 @@ df.transactions %&gt;%
   vertical-align: middle;
 }
 
-#iginuyipnz .gt_empty_group_heading {
+#pkzcjbjggf .gt_empty_group_heading {
   padding: 0.5px;
   color: #000000;
   background-color: #FFFFFF;
@@ -758,29 +757,29 @@ df.transactions %&gt;%
   vertical-align: middle;
 }
 
-#iginuyipnz .gt_striped {
+#pkzcjbjggf .gt_striped {
   background-color: #f2f2f2;
 }
 
-#iginuyipnz .gt_row {
+#pkzcjbjggf .gt_row {
   padding: 10px;
   /* row.padding */
   margin: 10px;
   vertical-align: middle;
 }
 
-#iginuyipnz .gt_stub {
+#pkzcjbjggf .gt_stub {
   border-right-style: solid;
   border-right-width: 2px;
   border-right-color: #A8A8A8;
   padding-left: 12px;
 }
 
-#iginuyipnz .gt_stub.gt_row {
+#pkzcjbjggf .gt_stub.gt_row {
   background-color: #FFFFFF;
 }
 
-#iginuyipnz .gt_summary_row {
+#pkzcjbjggf .gt_summary_row {
   background-color: #FFFFFF;
   /* summary_row.background.color */
   padding: 6px;
@@ -789,13 +788,13 @@ df.transactions %&gt;%
   /* summary_row.text_transform */
 }
 
-#iginuyipnz .gt_first_summary_row {
+#pkzcjbjggf .gt_first_summary_row {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #A8A8A8;
 }
 
-#iginuyipnz .gt_table_body {
+#pkzcjbjggf .gt_table_body {
   border-top-style: solid;
   /* field.border.top.style */
   border-top-width: 2px;
@@ -810,55 +809,55 @@ df.transactions %&gt;%
   /* field.border.bottom.color */
 }
 
-#iginuyipnz .gt_footnote {
+#pkzcjbjggf .gt_footnote {
   font-size: 90%;
   /* footnote.font.size */
   padding: 4px;
   /* footnote.padding */
 }
 
-#iginuyipnz .gt_sourcenote {
+#pkzcjbjggf .gt_sourcenote {
   font-size: 90%;
   /* sourcenote.font.size */
   padding: 4px;
   /* sourcenote.padding */
 }
 
-#iginuyipnz .gt_center {
+#pkzcjbjggf .gt_center {
   text-align: center;
 }
 
-#iginuyipnz .gt_left {
+#pkzcjbjggf .gt_left {
   text-align: left;
 }
 
-#iginuyipnz .gt_right {
+#pkzcjbjggf .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#iginuyipnz .gt_font_normal {
+#pkzcjbjggf .gt_font_normal {
   font-weight: normal;
 }
 
-#iginuyipnz .gt_font_bold {
+#pkzcjbjggf .gt_font_bold {
   font-weight: bold;
 }
 
-#iginuyipnz .gt_font_italic {
+#pkzcjbjggf .gt_font_italic {
   font-style: italic;
 }
 
-#iginuyipnz .gt_super {
+#pkzcjbjggf .gt_super {
   font-size: 65%;
 }
 
-#iginuyipnz .gt_footnote_glyph {
+#pkzcjbjggf .gt_footnote_glyph {
   font-style: italic;
   font-size: 65%;
 }
 </style>
-<div id="iginuyipnz" style="overflow-x:auto;"><!--gt table start-->
+<div id="pkzcjbjggf" style="overflow-x:auto;"><!--gt table start-->
 <table class='gt_table'>
 <tr>
 <th class='gt_col_heading gt_left' rowspan='1' colspan='1'>Organization</th>
@@ -877,7 +876,7 @@ df.transactions %&gt;%
 </table>
 <!--gt table end-->
 </div>
-<p>If you look at the XML, <a href="https://aidstream.org/files/xml/protos-activities.xml" class="uri">https://aidstream.org/files/xml/protos-activities.xml</a>, that high value is in different currency. We haven’t adjusted for currency here, but that’s something we will do in premium support so that such outliers are adjusted. It could be the situation where you forget to add currency, giving the wrong picture.</p>
+<p>If you look at the XML, <a href="https://aidstream.org/files/xml/protos-activities.xml" class="uri">https://aidstream.org/files/xml/protos-activities.xml</a>, that high value is in different currency. We haven’t adjusted for currency here.</p>
 </div>
 <div id="plotting-all-the-transactions-of-published-activities-except-outlier" class="section level3">
 <h3>Plotting all the transactions of published activities except outlier</h3>
@@ -898,7 +897,7 @@ df.transactions %&gt;%
 <p><img src="/post/2019-02-22-aidstream-belgium-organisations-quality_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
 </div>
 <div id="facet-view-of-published-transactions" class="section level3">
-<h3>Facet view of published Transactions</h3>
+<h3>Facet view of Published Transactions</h3>
 <p>Lets further segregate the transactions based on <em>Transaction Type</em> so that overlap among different types are minimised.</p>
 <pre class="r"><code>df.transactions %&gt;% 
   filter(!is.na(date2)) %&gt;% 
@@ -948,7 +947,7 @@ df.transactions %&gt;%
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#nuoyxxbxxt .gt_table {
+#khhzbvjlbr .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -967,13 +966,13 @@ df.transactions %&gt;%
   /* table.border.top.color */
 }
 
-#nuoyxxbxxt .gt_heading {
+#khhzbvjlbr .gt_heading {
   background-color: #FFFFFF;
   /* heading.background.color */
   border-bottom-color: #FFFFFF;
 }
 
-#nuoyxxbxxt .gt_title {
+#khhzbvjlbr .gt_title {
   color: #000000;
   font-size: 125%;
   /* heading.title.font.size */
@@ -984,7 +983,7 @@ df.transactions %&gt;%
   border-bottom-width: 0;
 }
 
-#nuoyxxbxxt .gt_subtitle {
+#khhzbvjlbr .gt_subtitle {
   color: #000000;
   font-size: 85%;
   /* heading.subtitle.font.size */
@@ -995,7 +994,7 @@ df.transactions %&gt;%
   border-top-width: 0;
 }
 
-#nuoyxxbxxt .gt_bottom_border {
+#khhzbvjlbr .gt_bottom_border {
   border-bottom-style: solid;
   /* heading.border.bottom.style */
   border-bottom-width: 2px;
@@ -1004,7 +1003,7 @@ df.transactions %&gt;%
   /* heading.border.bottom.color */
 }
 
-#nuoyxxbxxt .gt_column_spanner {
+#khhzbvjlbr .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #A8A8A8;
@@ -1012,7 +1011,7 @@ df.transactions %&gt;%
   padding-bottom: 4px;
 }
 
-#nuoyxxbxxt .gt_col_heading {
+#khhzbvjlbr .gt_col_heading {
   color: #000000;
   background-color: #FFFFFF;
   /* column_labels.background.color */
@@ -1025,11 +1024,11 @@ df.transactions %&gt;%
   margin: 10px;
 }
 
-#nuoyxxbxxt .gt_sep_right {
+#khhzbvjlbr .gt_sep_right {
   border-right: 5px solid #FFFFFF;
 }
 
-#nuoyxxbxxt .gt_group_heading {
+#khhzbvjlbr .gt_group_heading {
   padding: 8px;
   color: #000000;
   background-color: #FFFFFF;
@@ -1053,7 +1052,7 @@ df.transactions %&gt;%
   vertical-align: middle;
 }
 
-#nuoyxxbxxt .gt_empty_group_heading {
+#khhzbvjlbr .gt_empty_group_heading {
   padding: 0.5px;
   color: #000000;
   background-color: #FFFFFF;
@@ -1077,29 +1076,29 @@ df.transactions %&gt;%
   vertical-align: middle;
 }
 
-#nuoyxxbxxt .gt_striped {
+#khhzbvjlbr .gt_striped {
   background-color: #f2f2f2;
 }
 
-#nuoyxxbxxt .gt_row {
+#khhzbvjlbr .gt_row {
   padding: 10px;
   /* row.padding */
   margin: 10px;
   vertical-align: middle;
 }
 
-#nuoyxxbxxt .gt_stub {
+#khhzbvjlbr .gt_stub {
   border-right-style: solid;
   border-right-width: 2px;
   border-right-color: #A8A8A8;
   padding-left: 12px;
 }
 
-#nuoyxxbxxt .gt_stub.gt_row {
+#khhzbvjlbr .gt_stub.gt_row {
   background-color: #FFFFFF;
 }
 
-#nuoyxxbxxt .gt_summary_row {
+#khhzbvjlbr .gt_summary_row {
   background-color: #FFFFFF;
   /* summary_row.background.color */
   padding: 6px;
@@ -1108,13 +1107,13 @@ df.transactions %&gt;%
   /* summary_row.text_transform */
 }
 
-#nuoyxxbxxt .gt_first_summary_row {
+#khhzbvjlbr .gt_first_summary_row {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #A8A8A8;
 }
 
-#nuoyxxbxxt .gt_table_body {
+#khhzbvjlbr .gt_table_body {
   border-top-style: solid;
   /* field.border.top.style */
   border-top-width: 2px;
@@ -1129,55 +1128,55 @@ df.transactions %&gt;%
   /* field.border.bottom.color */
 }
 
-#nuoyxxbxxt .gt_footnote {
+#khhzbvjlbr .gt_footnote {
   font-size: 90%;
   /* footnote.font.size */
   padding: 4px;
   /* footnote.padding */
 }
 
-#nuoyxxbxxt .gt_sourcenote {
+#khhzbvjlbr .gt_sourcenote {
   font-size: 90%;
   /* sourcenote.font.size */
   padding: 4px;
   /* sourcenote.padding */
 }
 
-#nuoyxxbxxt .gt_center {
+#khhzbvjlbr .gt_center {
   text-align: center;
 }
 
-#nuoyxxbxxt .gt_left {
+#khhzbvjlbr .gt_left {
   text-align: left;
 }
 
-#nuoyxxbxxt .gt_right {
+#khhzbvjlbr .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#nuoyxxbxxt .gt_font_normal {
+#khhzbvjlbr .gt_font_normal {
   font-weight: normal;
 }
 
-#nuoyxxbxxt .gt_font_bold {
+#khhzbvjlbr .gt_font_bold {
   font-weight: bold;
 }
 
-#nuoyxxbxxt .gt_font_italic {
+#khhzbvjlbr .gt_font_italic {
   font-style: italic;
 }
 
-#nuoyxxbxxt .gt_super {
+#khhzbvjlbr .gt_super {
   font-size: 65%;
 }
 
-#nuoyxxbxxt .gt_footnote_glyph {
+#khhzbvjlbr .gt_footnote_glyph {
   font-style: italic;
   font-size: 65%;
 }
 </style>
-<div id="nuoyxxbxxt" style="overflow-x:auto;"><!--gt table start-->
+<div id="khhzbvjlbr" style="overflow-x:auto;"><!--gt table start-->
 <table class='gt_table'>
 <thead>
 <tr>
