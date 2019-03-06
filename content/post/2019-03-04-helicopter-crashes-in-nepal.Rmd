@@ -1,0 +1,213 @@
+---
+title: Helicopter Crashes in Nepal
+author: ''
+date: '2019-03-04'
+slug: helicopter-crashes-in-nepal
+categories: []
+tags: []
+output:
+  blogdown::html_page:
+    toc: true
+---
+
+## Data source and cleanup
+
+[Onlinekhabar](https://www.onlinekhabar.com/2019/02/745734) posted news on Helicoptor crashes with data in the form of image. With brief search, the data source at CAANNepal was found but in [pdf](http://www.caanepal.gov.np/wp-content/uploads/2016/04/Helicopter-accident-2.pdf). 
+
+![](/post/2019-03-04-helicopter-crashes-in-nepal_files/helicopter-crash-Caanepal.png){width=800px}
+
+I pasted the data in [google spreadsheet](https://docs.google.com/spreadsheets/d/1wADDF1xsmqrkQWoRo0IzfjpXQ8n6NDXKY_CEMnZpYx8/edit#gid=178454315), made some fixes and created [clean data](https://docs.google.com/spreadsheets/d/1wADDF1xsmqrkQWoRo0IzfjpXQ8n6NDXKY_CEMnZpYx8/edit#gid=420433179). The clean data also contains the lat-long based from the location data. The original data doesn't have district field, so it was manually added and lat-lng was generated from [Geocode cells](https://chrome.google.com/webstore/detail/geocode-cells/pkocmaboheckpkcbnnlghnfccjjikmfc?hl=en) addon in google spreadsheet.
+
+The google spreadsheet needs to be published before you can read from R. 
+
+```{r message=FALSE, warning=FALSE}
+library(googlesheets)
+library(tidyverse)
+gs_file <- gs_key("1wADDF1xsmqrkQWoRo0IzfjpXQ8n6NDXKY_CEMnZpYx8")
+```
+
+Now I read the `data` sheet from the [spreadsheet](https://docs.google.com/spreadsheets/d/1wADDF1xsmqrkQWoRo0IzfjpXQ8n6NDXKY_CEMnZpYx8/edit#gid=420433179) and cleaned the headers using `janitor`.
+.
+```{r message=FALSE, warning=FALSE}
+df.crashes <- gs_file %>% 
+  gs_read("data")
+
+df.crashes <- df.crashes %>% 
+  janitor::clean_names()
+```
+
+## Data Exploration
+
+The following sections shows different ways of looking at the data. 
+
+### Operator vs Crashes
+
+There are `r length(unique(df.crashes$operator_owner))` operators in the data and 34 crashes till date. Onlinekhabar has mentioned one extra crash but the operator is not registered in the company so it's not listed in CAA Nepal. 
+
+```{r message=FALSE, warning=FALSE}
+df.crashes %>% 
+  group_by(operator_owner) %>% 
+  count() %>% 
+  ggplot(aes(x=reorder(operator_owner,-n), y=n)) +
+  geom_bar(stat = "identity", fill="gray") +
+  geom_text(aes(label = n), hjust = -0.5, vjust=-0.5, size=2.5) +
+  coord_flip() +
+  labs(x="",y="") +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+```
+
+We see that `Fishtail Air` has the large number of crashes compared to other operators. So next we see the fatalities in those crashes.
+
+#### Operator vs Crashes and Deaths
+
+```{r message=FALSE, warning=FALSE}
+crashes.count <- df.crashes %>% 
+  group_by(operator_owner) %>% 
+  count() %>% 
+  mutate(type="Crash")
+death.count <- df.crashes %>% 
+  group_by(operator_owner) %>% 
+  summarise(n=sum(fatality, na.rm = TRUE)) %>% 
+  mutate(type="Death")
+
+bind_rows(crashes.count)  %>% 
+  ggplot(aes(x=reorder(operator_owner,-n), y=n)) +
+  geom_bar(stat = "identity", fill="gray") +
+  geom_text(aes(label = n), hjust = -0.5, vjust=-0.5, size=2.5) +
+  geom_point(data=death.count, aes(x=operator_owner, y=n),color="#fc8d62") +
+  geom_text(data=death.count, aes(label = n), alpha=0.8, hjust = -1, size=2.5) +
+  geom_segment(data=death.count, 
+               aes(x = operator_owner, xend = operator_owner, y = 0, yend = n-0.4),
+               alpha=0.5, linetype="dotted") +
+  coord_flip() +
+  labs(x="",y="") +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+```
+
+Though `Fishtail Air` has highest number of crashes, the fatalities is highest in case of `Shree Airlines`. However fatalities mightn't make sense for further analysis as the number of deaths depend on the number of occupants. 
+
+### Monthly Crashes
+
+#### Monthly crashes over years
+
+Plotting the crashes in each month of each year, we can see that there are 2 instances where there are 2 crashes in a given month - Sep of 2006 and Jun of 2015.
+
+```{r message=FALSE, warning=FALSE}
+months <- month.abb[seq(1,12,1)]
+names(months) <- seq(1,12,1)
+
+df.crashes %>% 
+  mutate(year = as.integer(year), month = as.integer(month)) %>% 
+  group_by(year, month) %>% 
+  count() %>% 
+  ggplot(aes(x=year, y=month, size=factor(n))) +
+  geom_point(alpha=0.5) +
+  scale_x_continuous(labels=seq(1979,2020,2), breaks=seq(1979,2020,2)) +
+  scale_y_continuous(labels = months, breaks = seq(1,12,1)) +
+  theme(axis.text.x = element_text(angle = 60, vjust=0.8, hjust=1,size=8))+
+  labs(x="",y="", size="No of Crashes")
+```
+
+```{r message=FALSE, warning=FALSE}
+df.crashes %>% 
+  mutate(month = as.integer(month)) %>% 
+  group_by(month) %>% 
+  count() %>% 
+  ggplot(aes(x=month, y=n)) +
+  geom_bar(stat = "identity", fill="grey") +
+  geom_text(aes(label=n), vjust =-0.6, size=2.5) +
+  scale_x_continuous(labels = months, breaks = seq(1,12,1)) +
+  labs(x="",
+       y="No of Crashes") +
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank())
+
+```
+
+#### Monthly crashes in different districts
+
+The crashes are concentrated in 17 districts only, however
+
+```{r message=FALSE, warning=FALSE}
+df.crashes %>% 
+  mutate(month = as.integer(month)) %>% 
+  group_by(district, month) %>% 
+  count() %>% 
+  ggplot(aes(x=district, y=month, size=factor(n))) +
+  geom_point(alpha=0.5) +
+  scale_y_continuous(labels = months, breaks = seq(1,12,1)) +
+  theme(axis.text.x = element_text(angle = 60, vjust=0.9, hjust=1,size=8))+
+  labs(x="",y="",size="No of Crashes")
+```
+
+#### Total Crashes in differnt districts
+
+```{r message=FALSE, warning=FALSE}
+df.crashes %>% 
+  group_by(district) %>% 
+  count() %>% 
+  ggplot(aes(x=reorder(district,-n), y=n)) +
+  geom_bar(stat = "identity", fill="grey") +
+  scale_y_continuous(labels = seq(1,7,1), breaks=seq(1,7,1)) +
+  labs(x="",
+       y="No of Crashes") +
+  theme(axis.text.x = element_text(angle = 60, vjust=1, hjust=1,size=8))
+
+```
+
+### Crash Mapping 
+
+The Nepal districts's geojson data is maintained in the [github](https://github.com/anjesh/NepalMaps/). I am using `sf` package to read the json data.
+
+```{r message=FALSE, warning=FALSE}
+library("sf")
+districts_json <- "https://raw.githubusercontent.com/anjesh/NepalMaps/master/geojson/districts.json"
+sf.districts <- read_sf(districts_json)
+
+```
+
+#### District name Checking
+
+Lets check the districts data so that any point doesn't get missed during mapping.
+
+```{r message=FALSE, warning=FALSE}
+districts <- sf.districts$District
+districts[match(df.crashes$district, unique(sf.districts$District))]
+```
+
+#### Crash mapping in the Map
+
+```{r message=FALSE, warning=FALSE}
+crashed.districts <- unique(df.crashes$district)
+ggplot(data = sf.districts) +
+  geom_sf() + 
+  # geom_sf(aes(fill=ifelse(District %in% crashed.districts, District,""))) + 
+  geom_sf_text(aes(label=ifelse(District %in% crashed.districts, District,"")), size=2.5) +
+  geom_point(data = df.crashes, 
+             aes(x=lng, y=lat), alpha=0.5, color="red") +
+  labs(x="",y="", fill = "") +
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        legend.position = "bottom",
+        legend.text = element_text(size=6))
+```
+
+#### Animated Crash mapping over the years
+
+```{r eval=FALSE, fig.width=800, message=FALSE, warning=FALSE, include=TRUE}
+library(gganimate)
+
+ggplot(data = sf.districts) +
+  geom_sf() +
+  geom_point(data = df.crashes, aes(x=lng,y=lat), alpha=0.5, color="red") +
+  labs(x="",y="") +
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        legend.position = c(0.95, 0.79)) +
+  ggtitle("year: {current_frame}") +
+  transition_manual(year, cumulative = TRUE)
+```
+
+![](/post/2019-03-04-helicopter-crashes-in-nepal_files/helicopter-crash-animated.gif){width=600px}

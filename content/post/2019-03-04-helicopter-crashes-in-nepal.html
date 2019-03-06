@@ -1,0 +1,202 @@
+---
+title: Helicopter Crashes in Nepal
+author: ''
+date: '2019-03-04'
+slug: helicopter-crashes-in-nepal
+categories: []
+tags: []
+output:
+  blogdown::html_page:
+    toc: true
+---
+
+
+<div id="TOC">
+<ul>
+<li><a href="#data-source-and-cleanup">Data source and cleanup</a></li>
+<li><a href="#data-exploration">Data Exploration</a><ul>
+<li><a href="#operator-vs-crashes">Operator vs Crashes</a></li>
+<li><a href="#monthly-crashes">Monthly Crashes</a></li>
+<li><a href="#crash-mapping">Crash Mapping</a></li>
+</ul></li>
+</ul>
+</div>
+
+<div id="data-source-and-cleanup" class="section level2">
+<h2>Data source and cleanup</h2>
+<p><a href="https://www.onlinekhabar.com/2019/02/745734">Onlinekhabar</a> posted news on Helicoptor crashes with data in the form of image. With brief search, the data source at CAANNepal was found but in <a href="http://www.caanepal.gov.np/wp-content/uploads/2016/04/Helicopter-accident-2.pdf">pdf</a>.</p>
+<p><img src="/post/2019-03-04-helicopter-crashes-in-nepal_files/helicopter-crash-Caanepal.png" width="800" /></p>
+<p>I pasted the data in <a href="https://docs.google.com/spreadsheets/d/1wADDF1xsmqrkQWoRo0IzfjpXQ8n6NDXKY_CEMnZpYx8/edit#gid=178454315">google spreadsheet</a>, made some fixes and created <a href="https://docs.google.com/spreadsheets/d/1wADDF1xsmqrkQWoRo0IzfjpXQ8n6NDXKY_CEMnZpYx8/edit#gid=420433179">clean data</a>. The clean data also contains the lat-long based from the location data. The original data doesn’t have district field, so it was manually added and lat-lng was generated from <a href="https://chrome.google.com/webstore/detail/geocode-cells/pkocmaboheckpkcbnnlghnfccjjikmfc?hl=en">Geocode cells</a> addon in google spreadsheet.</p>
+<p>The google spreadsheet needs to be published before you can read from R.</p>
+<pre class="r"><code>library(googlesheets)
+library(tidyverse)
+gs_file &lt;- gs_key(&quot;1wADDF1xsmqrkQWoRo0IzfjpXQ8n6NDXKY_CEMnZpYx8&quot;)</code></pre>
+<p>Now I read the <code>data</code> sheet from the <a href="https://docs.google.com/spreadsheets/d/1wADDF1xsmqrkQWoRo0IzfjpXQ8n6NDXKY_CEMnZpYx8/edit#gid=420433179">spreadsheet</a> and cleaned the headers using <code>janitor</code>.
+.</p>
+<pre class="r"><code>df.crashes &lt;- gs_file %&gt;% 
+  gs_read(&quot;data&quot;)
+
+df.crashes &lt;- df.crashes %&gt;% 
+  janitor::clean_names()</code></pre>
+</div>
+<div id="data-exploration" class="section level2">
+<h2>Data Exploration</h2>
+<p>The following sections shows different ways of looking at the data.</p>
+<div id="operator-vs-crashes" class="section level3">
+<h3>Operator vs Crashes</h3>
+<p>There are 16 operators in the data and 34 crashes till date. Onlinekhabar has mentioned one extra crash but the operator is not registered in the company so it’s not listed in CAA Nepal.</p>
+<pre class="r"><code>df.crashes %&gt;% 
+  group_by(operator_owner) %&gt;% 
+  count() %&gt;% 
+  ggplot(aes(x=reorder(operator_owner,-n), y=n)) +
+  geom_bar(stat = &quot;identity&quot;, fill=&quot;gray&quot;) +
+  geom_text(aes(label = n), hjust = -0.5, vjust=-0.5, size=2.5) +
+  coord_flip() +
+  labs(x=&quot;&quot;,y=&quot;&quot;) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())</code></pre>
+<p><img src="/post/2019-03-04-helicopter-crashes-in-nepal_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>We see that <code>Fishtail Air</code> has the large number of crashes compared to other operators. So next we see the fatalities in those crashes.</p>
+<div id="operator-vs-crashes-and-deaths" class="section level4">
+<h4>Operator vs Crashes and Deaths</h4>
+<pre class="r"><code>crashes.count &lt;- df.crashes %&gt;% 
+  group_by(operator_owner) %&gt;% 
+  count() %&gt;% 
+  mutate(type=&quot;Crash&quot;)
+death.count &lt;- df.crashes %&gt;% 
+  group_by(operator_owner) %&gt;% 
+  summarise(n=sum(fatality, na.rm = TRUE)) %&gt;% 
+  mutate(type=&quot;Death&quot;)
+
+bind_rows(crashes.count)  %&gt;% 
+  ggplot(aes(x=reorder(operator_owner,-n), y=n)) +
+  geom_bar(stat = &quot;identity&quot;, fill=&quot;gray&quot;) +
+  geom_text(aes(label = n), hjust = -0.5, vjust=-0.5, size=2.5) +
+  geom_point(data=death.count, aes(x=operator_owner, y=n),color=&quot;#fc8d62&quot;) +
+  geom_text(data=death.count, aes(label = n), alpha=0.8, hjust = -1, size=2.5) +
+  geom_segment(data=death.count, 
+               aes(x = operator_owner, xend = operator_owner, y = 0, yend = n-0.4),
+               alpha=0.5, linetype=&quot;dotted&quot;) +
+  coord_flip() +
+  labs(x=&quot;&quot;,y=&quot;&quot;) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())</code></pre>
+<p><img src="/post/2019-03-04-helicopter-crashes-in-nepal_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>Though <code>Fishtail Air</code> has highest number of crashes, the fatalities is highest in case of <code>Shree Airlines</code>. However fatalities mightn’t make sense for further analysis as the number of deaths depend on the number of occupants.</p>
+</div>
+</div>
+<div id="monthly-crashes" class="section level3">
+<h3>Monthly Crashes</h3>
+<div id="monthly-crashes-over-years" class="section level4">
+<h4>Monthly crashes over years</h4>
+<p>Plotting the crashes in each month of each year, we can see that there are 2 instances where there are 2 crashes in a given month - Sep of 2006 and Jun of 2015.</p>
+<pre class="r"><code>months &lt;- month.abb[seq(1,12,1)]
+names(months) &lt;- seq(1,12,1)
+
+df.crashes %&gt;% 
+  mutate(year = as.integer(year), month = as.integer(month)) %&gt;% 
+  group_by(year, month) %&gt;% 
+  count() %&gt;% 
+  ggplot(aes(x=year, y=month, size=factor(n))) +
+  geom_point(alpha=0.5) +
+  scale_x_continuous(labels=seq(1979,2020,2), breaks=seq(1979,2020,2)) +
+  scale_y_continuous(labels = months, breaks = seq(1,12,1)) +
+  theme(axis.text.x = element_text(angle = 60, vjust=0.8, hjust=1,size=8))+
+  labs(x=&quot;&quot;,y=&quot;&quot;, size=&quot;No of Crashes&quot;)</code></pre>
+<p><img src="/post/2019-03-04-helicopter-crashes-in-nepal_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<pre class="r"><code>df.crashes %&gt;% 
+  mutate(month = as.integer(month)) %&gt;% 
+  group_by(month) %&gt;% 
+  count() %&gt;% 
+  ggplot(aes(x=month, y=n)) +
+  geom_bar(stat = &quot;identity&quot;, fill=&quot;grey&quot;) +
+  geom_text(aes(label=n), vjust =-0.6, size=2.5) +
+  scale_x_continuous(labels = months, breaks = seq(1,12,1)) +
+  labs(x=&quot;&quot;,
+       y=&quot;No of Crashes&quot;) +
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank())</code></pre>
+<p><img src="/post/2019-03-04-helicopter-crashes-in-nepal_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+</div>
+<div id="monthly-crashes-in-different-districts" class="section level4">
+<h4>Monthly crashes in different districts</h4>
+<p>The crashes are concentrated in 17 districts only, however</p>
+<pre class="r"><code>df.crashes %&gt;% 
+  mutate(month = as.integer(month)) %&gt;% 
+  group_by(district, month) %&gt;% 
+  count() %&gt;% 
+  ggplot(aes(x=district, y=month, size=factor(n))) +
+  geom_point(alpha=0.5) +
+  scale_y_continuous(labels = months, breaks = seq(1,12,1)) +
+  theme(axis.text.x = element_text(angle = 60, vjust=0.9, hjust=1,size=8))+
+  labs(x=&quot;&quot;,y=&quot;&quot;,size=&quot;No of Crashes&quot;)</code></pre>
+<p><img src="/post/2019-03-04-helicopter-crashes-in-nepal_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+</div>
+<div id="total-crashes-in-differnt-districts" class="section level4">
+<h4>Total Crashes in differnt districts</h4>
+<pre class="r"><code>df.crashes %&gt;% 
+  group_by(district) %&gt;% 
+  count() %&gt;% 
+  ggplot(aes(x=reorder(district,-n), y=n)) +
+  geom_bar(stat = &quot;identity&quot;, fill=&quot;grey&quot;) +
+  scale_y_continuous(labels = seq(1,7,1), breaks=seq(1,7,1)) +
+  labs(x=&quot;&quot;,
+       y=&quot;No of Crashes&quot;) +
+  theme(axis.text.x = element_text(angle = 60, vjust=1, hjust=1,size=8))</code></pre>
+<p><img src="/post/2019-03-04-helicopter-crashes-in-nepal_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+</div>
+</div>
+<div id="crash-mapping" class="section level3">
+<h3>Crash Mapping</h3>
+<p>The Nepal districts’s geojson data is maintained in the <a href="https://github.com/anjesh/NepalMaps/">github</a>. I am using <code>sf</code> package to read the json data.</p>
+<pre class="r"><code>library(&quot;sf&quot;)
+districts_json &lt;- &quot;https://raw.githubusercontent.com/anjesh/NepalMaps/master/geojson/districts.json&quot;
+sf.districts &lt;- read_sf(districts_json)</code></pre>
+<div id="district-name-checking" class="section level4">
+<h4>District name Checking</h4>
+<p>Lets check the districts data so that any point doesn’t get missed during mapping.</p>
+<pre class="r"><code>districts &lt;- sf.districts$District
+districts[match(df.crashes$district, unique(sf.districts$District))]</code></pre>
+<pre><code>##  [1] &quot;Rasuwa&quot;        &quot;Rasuwa&quot;        &quot;Solukhumbu&quot;    &quot;Solukhumbu&quot;   
+##  [5] &quot;Kalikot&quot;       &quot;Doti&quot;          &quot;Okhaldhunga&quot;   &quot;Sindhupalchok&quot;
+##  [9] &quot;Ramechhap&quot;     &quot;Humla&quot;         &quot;Mugu&quot;          &quot;Sankhuwasabha&quot;
+## [13] &quot;Solukhumbu&quot;    &quot;Solukhumbu&quot;    &quot;Ramechhap&quot;     &quot;Solukhumbu&quot;   
+## [17] &quot;Rukum&quot;         &quot;Kathmandu&quot;     &quot;Rukum&quot;         &quot;Taplejung&quot;    
+## [21] &quot;Jumla&quot;         &quot;Kaski&quot;         &quot;Humla&quot;         &quot;Solukhumbu&quot;   
+## [25] &quot;Solukhumbu&quot;    &quot;Humla&quot;         &quot;Sindhupalchok&quot; &quot;Sindhupalchok&quot;
+## [29] &quot;Gorkha&quot;        &quot;Nuwakot&quot;       &quot;Rasuwa&quot;        &quot;Kathmandu&quot;    
+## [33] &quot;Nuwakot&quot;       &quot;Taplejung&quot;</code></pre>
+</div>
+<div id="crash-mapping-in-the-map" class="section level4">
+<h4>Crash mapping in the Map</h4>
+<pre class="r"><code>crashed.districts &lt;- unique(df.crashes$district)
+ggplot(data = sf.districts) +
+  geom_sf() + 
+  # geom_sf(aes(fill=ifelse(District %in% crashed.districts, District,&quot;&quot;))) + 
+  geom_sf_text(aes(label=ifelse(District %in% crashed.districts, District,&quot;&quot;)), size=2.5) +
+  geom_point(data = df.crashes, 
+             aes(x=lng, y=lat), alpha=0.5, color=&quot;red&quot;) +
+  labs(x=&quot;&quot;,y=&quot;&quot;, fill = &quot;&quot;) +
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        legend.position = &quot;bottom&quot;,
+        legend.text = element_text(size=6))</code></pre>
+<p><img src="/post/2019-03-04-helicopter-crashes-in-nepal_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+</div>
+<div id="animated-crash-mapping-over-the-years" class="section level4">
+<h4>Animated Crash mapping over the years</h4>
+<pre class="r"><code>library(gganimate)
+
+ggplot(data = sf.districts) +
+  geom_sf() +
+  geom_point(data = df.crashes, aes(x=lng,y=lat), alpha=0.5, color=&quot;red&quot;) +
+  labs(x=&quot;&quot;,y=&quot;&quot;) +
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        legend.position = c(0.95, 0.79)) +
+  ggtitle(&quot;year: {current_frame}&quot;) +
+  transition_manual(year, cumulative = TRUE)</code></pre>
+<p><img src="/post/2019-03-04-helicopter-crashes-in-nepal_files/helicopter-crash-animated.gif" width="600" /></p>
+</div>
+</div>
+</div>
